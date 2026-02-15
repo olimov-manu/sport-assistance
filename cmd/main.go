@@ -1,20 +1,10 @@
 package main
 
 import (
-	"net/http"
-
-	"github.com/gin-gonic/gin"
+	"sport-assistance/internal/application"
 )
 
 func main() {
-
-	router := gin.Default()
-
-	router.Handler()
-	server := &http.Server{
-		Addr:    ":8080",
-		Handler: nil,
-	}
-
-	server.ListenAndServe()
+	app := application.NewApplication()
+	app.Run()
 }
