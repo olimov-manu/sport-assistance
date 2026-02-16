@@ -11,9 +11,13 @@ import (
 )
 
 type IRepository interface {
-	CreateUser(ctx context.Context, user models.User) (int64, error)
-	CreateRefreshToken(ctx context.Context, userID int64, refreshToken string, expiresAt time.Time) error
+	CreateUser(ctx context.Context, user models.User) (uint64, error)
+	GetUserByID(ctx context.Context, userID uint64) (models.User, error)
+	GetUserByEmail(ctx context.Context, email string) (models.User, error)
 	UserExistsByEmail(ctx context.Context, email string) (bool, error)
+	RotateRefreshToken(ctx context.Context, userID uint64, oldRefreshToken, newRefreshToken string, newExpiresAt time.Time) error
+	CreateRefreshToken(ctx context.Context, userID uint64, refreshToken string, expiresAt time.Time) error
+	GetRefreshToken(ctx context.Context, refreshToken string) (models.RefreshTokenResponse, error)
 }
 
 type Service struct {

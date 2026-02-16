@@ -5,7 +5,7 @@ import (
 	"sport-assistance/internal/models"
 )
 
-func (r *Repository) CreateUser(ctx context.Context, user models.User) (int64, error) {
+func (r *Repository) CreateUser(ctx context.Context, user models.User) (uint64, error) {
 	query := `
 	INSERT INTO users (
 		name,
@@ -31,7 +31,7 @@ func (r *Repository) CreateUser(ctx context.Context, user models.User) (int64, e
 	RETURNING id
 	`
 
-	var id int64
+	var id uint64
 	err := r.postgres.QueryRow(
 		ctx,
 		query,
@@ -52,10 +52,73 @@ func (r *Repository) CreateUser(ctx context.Context, user models.User) (int64, e
 	).Scan(&id)
 
 	if err != nil {
-		return -1, err
+		return 0, err
 	}
 
 	return id, nil
+}
+
+func (r *Repository) GetUserByID(ctx context.Context, userID uint64) (models.User, error) {
+	query := `
+		SELECT
+			id,
+			name,
+			surname,
+			gender,
+			birth_date,
+			height_cm,
+			weight_kg,
+			sport_activity_level_id,
+			town_id,
+			phone_number,
+			email,
+			password,
+			is_have_injury,
+			injury_description,
+			photo,
+			created_at,
+			updated_at,
+			deleted_at
+		FROM users
+		WHERE id = $1
+		`
+
+	var user models.User
+	err := r.postgres.QueryRow(ctx, query, userID).Scan(
+		&user.ID,
+		&user.Name,
+		&user.Surname,
+		&user.Gender,
+		&user.BirthDate,
+		&user.HeightCm,
+		&user.WeightKg,
+		&user.SportActivityLevelID,
+		&user.TownID,
+		&user.PhoneNumber,
+		&user.Email,
+		&user.Password,
+		&user.IsHaveInjury,
+		&user.InjuryDescription,
+		&user.Photo,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+		&user.DeletedAt,
+	)
+
+	if err != nil {
+		return models.User{}, err
+	}
+	return user, nil
+}
+
+func (r *Repository) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
+	q := `SELECT id, email, password FROM users WHERE email = $1`
+	var user models.User
+	err := r.postgres.QueryRow(ctx, q, email).Scan(&user.ID, &user.Email, &user.Password)
+	if err != nil {
+		return models.User{}, err
+	}
+	return user, nil
 }
 
 func (r *Repository) UserExistsByEmail(ctx context.Context, email string) (bool, error) {

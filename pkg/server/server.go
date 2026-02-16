@@ -21,13 +21,13 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	return s.httpServer.Shutdown(ctx)
 }
 
-func NewServer(handler http.Handler) *Server {
+func NewServer(handler http.Handler, cfg *configs.Config) *Server {
 	return &Server{
 		httpServer: &http.Server{
-			Addr:           ":" + configs.GetConfigs().ServerConfig.Port,
+			Addr:           ":" + cfg.ServerConfig.Port,
 			Handler:        handler,
-			ReadTimeout:    configs.GetConfigs().ServerConfig.ReadTimeout,
-			WriteTimeout:   configs.GetConfigs().ServerConfig.WriteTimeout,
+			ReadTimeout:    cfg.ServerConfig.ReadTimeout,
+			WriteTimeout:   cfg.ServerConfig.WriteTimeout,
 			MaxHeaderBytes: 1 << 20, // 1 MB
 		},
 	}

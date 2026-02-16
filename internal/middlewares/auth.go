@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"sport-assistance/pkg/myerrors"
-	"strconv"
 	"strings"
 	"time"
 
@@ -46,7 +45,7 @@ func (m *Middleware) AuthMiddleware() gin.HandlerFunc {
 		claims := &Claims{}
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			if token.Method.Alg() != jwt.SigningMethodHS256.Alg() {
-				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+				return nil, fmt.Errorf("unexpected signing method: %s", token.Header["alg"])
 			}
 
 			return []byte(m.cfg.AccessTokenSecret), nil // если AccessTokenSecret строка
@@ -84,7 +83,7 @@ func (m *Middleware) AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		key := strconv.FormatUint(claims.UserID, 10)
+		key := fmt.Sprintf(m.cfg.AccessTokenRedisPrefix, claims.UserID)
 
 		ttl, err := m.redisClient.TTL(ctx, key).Result()
 		if err != nil || ttl.Seconds() < 1 {

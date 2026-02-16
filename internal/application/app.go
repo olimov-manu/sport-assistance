@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"errors"
+	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -25,7 +26,10 @@ type App struct {
 }
 
 func NewApplication() *App {
-	cfg := configs.GetConfigs()
+	cfg, err := configs.GetConfigs()
+	if err != nil {
+		log.Println("Error loading configs: ", err)
+	}
 
 	newLogger := logger.New(cfg.Logger)
 
@@ -39,8 +43,8 @@ func NewApplication() *App {
 	newRedisClient := databases.ConnectRedis(cfg)
 	newService := services.NewService(newRepository, newLogger, cfg, newRedisClient)
 	newMiddleware := middlewares.NewMiddleware(newRepository, cfg.SecurityConfig, newLogger, newRedisClient)
-	newHandler := handlers.NewHandler(newService, newLogger, newMiddleware)
-	newServer := server.NewServer(newHandler.InitHandler())
+	newHandler := handlers.NewHandler(newService, newLogger, newMiddleware, cfg)
+	newServer := server.NewServer(newHandler.InitHandler(), cfg)
 
 	return &App{
 		server: newServer,

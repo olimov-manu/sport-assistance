@@ -20,6 +20,7 @@ type DatabaseConfig struct {
 	DBSSLMode          string
 	DBMaxConn          int
 	DBConnectionString string
+	DBDateFormat       string
 }
 
 type ServerConfig struct {
@@ -29,11 +30,11 @@ type ServerConfig struct {
 }
 
 type SecurityConfig struct {
-	JWTSecretKey       string
-	AccessTokenTTL     time.Duration
-	AccessTokenSecret  string
-	RefreshTokenTTL    time.Duration
-	RefreshTokenSecret string
+	AccessTokenTTL         time.Duration
+	AccessTokenSecret      string
+	RefreshTokenTTL        time.Duration
+	RefreshTokenSecret     string
+	AccessTokenRedisPrefix string
 }
 
 type LoggerConfig struct {
@@ -46,17 +47,19 @@ type RedisConfig struct {
 	DBName   string
 }
 
+type SwaggerConfig struct {
+	SwaggerEnabled bool
+}
 type Config struct {
 	ServerConfig   ServerConfig
 	DatabaseConfig DatabaseConfig
 	SecurityConfig SecurityConfig
 	Logger         LoggerConfig
 	RedisConfig    RedisConfig
+	SwaggerConfig  SwaggerConfig
 }
 
-// GetConfigs загружает конфигурацию из .env или переменных окружения
-func GetConfigs() *Config {
-	// Загружаем .env, если он есть
+func GetConfigs() (*Config, error) {
 	err := godotenv.Load()
 	if err != nil {
 		log.Println("No .env file found, using environment variables")
@@ -82,6 +85,8 @@ func GetConfigs() *Config {
 		getEnv("DB_SSLMODE", "disable"),
 	)
 
+	isSwaggerEnabled, err := strconv.ParseBool(getEnv("SWAGGER_ENABLED", "false"))
+
 	return &Config{
 		ServerConfig: ServerConfig{
 			Port:         getEnv("PORT", "8080"),
@@ -97,6 +102,7 @@ func GetConfigs() *Config {
 			DBSSLMode:          getEnv("DB_SSLMODE", "disable"),
 			DBMaxConn:          maxConn,
 			DBConnectionString: dsn,
+			DBDateFormat:       getEnv("DB_DATE_FORMAT", "02-01-2006"),
 		},
 		RedisConfig: RedisConfig{
 			Host:     getEnv("REDIS_HOST", "localhost"),
@@ -105,16 +111,19 @@ func GetConfigs() *Config {
 			DBName:   getEnv("REDIS_DB", ""),
 		},
 		SecurityConfig: SecurityConfig{
-			JWTSecretKey:       getEnv("JWT_SECRET_KEY", ""),
-			AccessTokenTTL:     utils.ToDuration(getEnv("ACCESS_TOKEN_TTL", "10m")),
-			AccessTokenSecret:  getEnv("ACCESS_TOKEN_SECRET", ""),
-			RefreshTokenTTL:    utils.ToDuration(getEnv("REFRESH_TOKEN_TTL", "720h")),
-			RefreshTokenSecret: getEnv("REFRESH_TOKEN_SECRET", ""),
+			AccessTokenSecret:      getEnv("SECURITY_JWT_ACCESS_SECRET_KEY", ""),
+			AccessTokenTTL:         utils.ToDuration(getEnv("SECURITY_JWT_ACCESS_TOKEN_TTL", "10m")),
+			AccessTokenRedisPrefix: getEnv("SECURITY_JWT_ACCESS_TOKEN_REDIS_PREFIX", "auth:access_token:%d"),
+			RefreshTokenSecret:     getEnv("SECURITY_JWT_REFRESH_SECRET_KEY", ""),
+			RefreshTokenTTL:        utils.ToDuration(getEnv("SECURITY_JWT_REFRESH_TOKEN_TTL", "720h")),
 		},
 		Logger: LoggerConfig{
 			Level: getEnv("LOG_LEVEL", "info"),
 		},
-	}
+		SwaggerConfig: SwaggerConfig{
+			SwaggerEnabled: isSwaggerEnabled,
+		},
+	}, nil
 }
 
 // getEnv возвращает значение переменной окружения или дефолтное значение

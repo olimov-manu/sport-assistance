@@ -2,16 +2,19 @@ package services
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"sport-assistance/internal/handlers/requests"
 	"sport-assistance/internal/handlers/responses"
 	"sport-assistance/internal/models"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 func (s *Service) Register(ctx context.Context, req requests.CreateUserRequest) (responses.JWTResponse, error) {
-	birthDate, err := time.Parse(time.DateOnly, req.BirthDate)
+	birthDate, err := time.Parse(s.cfg.DatabaseConfig.DBDateFormat, req.BirthDate)
 	if err != nil {
 		return responses.JWTResponse{}, err
 	}
@@ -41,7 +44,7 @@ func (s *Service) Register(ctx context.Context, req requests.CreateUserRequest) 
 		Photo:             req.Photo,
 	}
 
-	userId, err := s.repository.CreateUser(context.Background(), user)
+	userId, err := s.repository.CreateUser(ctx, user)
 	if err != nil {
 		return responses.JWTResponse{}, err
 	}
@@ -54,5 +57,29 @@ func (s *Service) Register(ctx context.Context, req requests.CreateUserRequest) 
 	return responses.JWTResponse{
 		AccessToken:  access,
 		RefreshToken: refresh,
+	}, nil
+}
+
+func (s *Service) Login(ctx context.Context, req requests.LoginRequest) (responses.JWTResponse, error) {
+	email := strings.TrimSpace(req.Email)
+	user, err := s.repository.GetUserByEmail(ctx, email)
+	if err != nil {
+		return responses.JWTResponse{}, errors.New("this user does not exist")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
+	if err != nil {
+		fmt.Printf("bcrypt err: %T %v, passLen=%d\n", err, err, len(req.Password))
+		return responses.JWTResponse{}, errors.New("invalid email or password")
+	}
+
+	accessToken, refreshToken, err := s.CreateTokens(ctx, user.ID, user.Email)
+	if err != nil {
+		return responses.JWTResponse{}, err
+	}
+
+	return responses.JWTResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
 	}, nil
 }
