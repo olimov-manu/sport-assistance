@@ -1,16 +1,22 @@
-﻿# sport-assistance
+# sport-assistance
 
 ## Назначение
 Backend-сервис для управления спортивными активностями. Запуск проекта выполняется через Docker Compose.
 
+## Запуск
 1. Запустите все контейнеры:
 ```bash
 docker compose up -d --build
 ```
-3. Проверьте состояние сервисов:
+2. Проверьте состояние сервисов:
 ```bash
 docker compose ps
 ```
+
+## Миграции БД
+- При старте контейнера `app` автоматически выполняется `goose up`.
+- Если новых миграций нет, в логах будет сообщение вида: `goose: no migrations to run. current version: N`.
+- Миграции лежат в папке `migrations/` и копируются в контейнер по пути `/app/migrations`.
 
 ## Порты контейнеров
 | Контейнер | Сервис | Порт в контейнере | Порт на хосте | Назначение |
@@ -41,6 +47,11 @@ docker compose up -d --build
 docker compose logs -f
 ```
 
+Проверка логов приложения (включая миграции):
+```bash
+docker compose logs -f app
+```
+
 Остановка контейнеров:
 ```bash
 docker compose down
@@ -49,6 +60,11 @@ docker compose down
 Остановка и удаление томов данных:
 ```bash
 docker compose down -v
+```
+
+Просмотр таблиц в Postgres:
+```bash
+docker exec -it fitness_postgres psql -U fitness_user -d fitness_db -c "\dt"
 ```
 
 ## Примечания
