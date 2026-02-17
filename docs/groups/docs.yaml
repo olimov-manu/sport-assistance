@@ -1,0 +1,34 @@
+paths:
+  /swagger.yaml:
+    get:
+      tags:
+        - docs
+      summary: Raw swagger file
+      servers:
+        - url: http://localhost:8081
+          description: Swagger server
+      responses:
+        "200":
+          description: Swagger YAML content
+          content:
+            application/x-yaml:
+              schema:
+                type: string
+
+  /swagger/{any}:
+    get:
+      tags:
+        - docs
+      summary: Swagger UI assets
+      servers:
+        - url: http://localhost:8081
+          description: Swagger server
+      parameters:
+        - in: path
+          name: any
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Swagger UI page or asset

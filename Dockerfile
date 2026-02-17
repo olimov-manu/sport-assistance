@@ -4,8 +4,11 @@ WORKDIR /app
 
 RUN apk add --no-cache git ca-certificates
 
+ENV GOPROXY=https://proxy.golang.org,direct
+ENV GOSUMDB=sum.golang.org
+
 COPY go.mod go.sum ./
-RUN go mod download
+RUN for i in 1 2 3 4 5; do go mod download && exit 0; echo "go mod download failed (attempt $i), retrying..."; sleep 3; done; exit 1
 
 COPY . .
 

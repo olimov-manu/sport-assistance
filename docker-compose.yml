@@ -1,4 +1,32 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sport_assistance_app
+    restart: unless-stopped
+    environment:
+      PORT: "8080"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: fitness_user
+      DB_PASSWORD: fitness_password
+      DB_NAME: fitness_db
+      DB_SSLMODE: disable
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ""
+      REDIS_DB: "0"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - app_network
+
   postgres:
     image: postgres:16-alpine
     container_name: fitness_postgres
@@ -13,23 +41,42 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - fitness_network
+      - app_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U fitness_user -d fitness_db"]
       interval: 10s
       timeout: 5s
       retries: 5
+
   redis:
     image: redis:latest
     container_name: redis-server
     restart: unless-stopped
     ports:
-      - "6379:6379"   # порт для подключения с хоста
+      - "6379:6379"
     volumes:
-      - redis-data:/data  # постоянное хранение данных
-    command: [ "redis-server", "--appendonly", "yes" ] # включаем AOF для сохранения данных
+      - redis-data:/data
+    command: ["redis-server", "--appendonly", "yes"]
     networks:
-      - redis-network
+      - app_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  swagger:
+    image: swaggerapi/swagger-ui:latest
+    container_name: sport_assistance_swagger
+    restart: unless-stopped
+    environment:
+      URL: /docs/openapi.yaml
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./docs:/usr/share/nginx/html/docs:ro
+    networks:
+      - app_network
 
 volumes:
   postgres_data:
@@ -37,7 +84,5 @@ volumes:
   redis-data:
 
 networks:
-  redis-network:
-    driver: bridge
-  fitness_network:
+  app_network:
     driver: bridge

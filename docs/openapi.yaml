@@ -1,22 +1,49 @@
 openapi: 3.0.3
 info:
-  title: My API
+  title: Sport Assistance API
   version: 1.0.0
 servers:
-  - url: /api
+  - url: http://localhost:8080
+    description: Backend API server
 paths:
   /ping:
-    get:
-      summary: Ping
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-              example:
-                status: ok
+    $ref: "./groups/system.yaml#/paths/~1ping"
+
+  /api/v1/auth/registration:
+    $ref: "./groups/auth.yaml#/paths/~1api~1v1~1auth~1registration"
+
+  /api/v1/auth/login:
+    $ref: "./groups/auth.yaml#/paths/~1api~1v1~1auth~1login"
+
+  /api/v1/auth/refresh:
+    $ref: "./groups/auth.yaml#/paths/~1api~1v1~1auth~1refresh"
+
+  /api/v1/auth/logout:
+    $ref: "./groups/auth.yaml#/paths/~1api~1v1~1auth~1logout"
+
+  /api/v1/lolo:
+    $ref: "./groups/private.yaml#/paths/~1api~1v1~1lolo"
+
+  /swagger.yaml:
+    $ref: "./groups/docs.yaml#/paths/~1swagger.yaml"
+
+  /swagger/{any}:
+    $ref: "./groups/docs.yaml#/paths/~1swagger~1{any}"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: "./groups/private.yaml#/components/securitySchemes/bearerAuth"
+  schemas:
+    CreateUserRequest:
+      $ref: "./groups/auth.yaml#/components/schemas/CreateUserRequest"
+    LoginRequest:
+      $ref: "./groups/auth.yaml#/components/schemas/LoginRequest"
+    RefreshTokensRequest:
+      $ref: "./groups/auth.yaml#/components/schemas/RefreshTokensRequest"
+    JWTResponse:
+      $ref: "./groups/auth.yaml#/components/schemas/JWTResponse"
+    ErrorResponse:
+      $ref: "./groups/auth.yaml#/components/schemas/ErrorResponse"
+    AuthMiddlewareErrorResponse:
+      $ref: "./groups/private.yaml#/components/schemas/AuthMiddlewareErrorResponse"

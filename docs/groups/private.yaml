@@ -1,0 +1,34 @@
+paths:
+  /api/v1/lolo:
+    get:
+      tags:
+        - private
+      summary: Protected test endpoint
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Request accepted
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthMiddlewareErrorResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    AuthMiddlewareErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        error:
+          type: string
+      required:
+        - success

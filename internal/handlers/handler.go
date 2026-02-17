@@ -9,8 +9,6 @@ import (
 	"sport-assistance/pkg/configs"
 
 	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type IService interface {
@@ -44,12 +42,13 @@ func (h *Handler) InitHandler() *gin.Engine {
 	router := gin.New()
 	router.Use(h.middlewares.CORSMiddleware(), gin.RecoveryWithWriter(gin.DefaultWriter))
 
-	if h.cfg.SwaggerConfig.SwaggerEnabled {
-		router.StaticFile("/swagger.yaml", "./swagger.yaml")
-		router.GET("/swagger/*any", ginSwagger.WrapHandler(
-			swaggerFiles.Handler,
-			ginSwagger.URL("/openapi.yaml"),
-		))
+	ping := router.Group("/")
+	{
+		ping.GET("/ping", func(c *gin.Context) {
+			c.JSON(200, gin.H{
+				"message": "pong",
+			})
+		})
 	}
 
 	public := router.Group("/api/v1/auth")

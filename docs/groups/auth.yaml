@@ -1,0 +1,197 @@
+paths:
+  /api/v1/auth/registration:
+    post:
+      tags:
+        - auth
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "201":
+          description: JWT pair created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JWTResponse"
+        "400":
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/login:
+    post:
+      tags:
+        - auth
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: JWT pair returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JWTResponse"
+        "400":
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/refresh:
+    post:
+      tags:
+        - auth
+      summary: Refresh access and refresh tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokensRequest"
+      responses:
+        "200":
+          description: New JWT pair returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JWTResponse"
+        "400":
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/logout:
+    post:
+      tags:
+        - auth
+      summary: Logout user
+      description: Route is declared in router, handler is not implemented yet.
+      responses:
+        "501":
+          description: Not implemented
+
+components:
+  schemas:
+    CreateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        surname:
+          type: string
+        gender:
+          type: string
+        birth_date:
+          type: string
+          description: ISO date (YYYY-MM-DD)
+          format: date
+        height_cm:
+          type: integer
+          nullable: true
+        weight_kg:
+          type: integer
+          nullable: true
+        sport_activity_level_id:
+          type: integer
+          nullable: true
+        town_id:
+          type: integer
+          nullable: true
+        phone_number:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        is_have_injury:
+          type: boolean
+        injury_description:
+          type: string
+          nullable: true
+        photo:
+          type: string
+          nullable: true
+      required:
+        - name
+        - surname
+        - gender
+        - birth_date
+        - phone_number
+        - email
+        - password
+        - is_have_injury
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    RefreshTokensRequest:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+      required:
+        - access_token
+        - refresh_token
+
+    JWTResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+      required:
+        - access_token
+        - refresh_token
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error

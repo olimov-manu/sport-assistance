@@ -28,7 +28,7 @@ type App struct {
 func NewApplication() *App {
 	cfg, err := configs.GetConfigs()
 	if err != nil {
-		log.Println("Error loading configs: ", err)
+		log.Fatalf("error loading configs: %s", err)
 	}
 
 	newLogger := logger.New(cfg.Logger)

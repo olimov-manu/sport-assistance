@@ -1,6 +1,9 @@
 package myerrors
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type ErrorCode string
 
@@ -9,6 +12,11 @@ const (
 	ErrCodeTooManyRequests ErrorCode = "TOO_MANY_REQUESTS"
 	ErrCodeTokenCreation   ErrorCode = "TOKEN_CREATION"
 	ErrCodeDatabase        ErrorCode = "DATABASE"
+)
+
+var (
+	ErrRefreshTokenNotFound = errors.New("refresh token not found")
+	ErrRefreshTokenInvalid  = errors.New("refresh token invalid or expired")
 )
 
 const (
@@ -59,5 +67,9 @@ func NewTokenErr(message string, err error) AppError {
 }
 
 func NewDatabaseErr(message string, err error) AppError {
+	return NewAppError(ErrCodeDatabase, message, err)
+}
+
+func NewRepositoryErr(message string, err error) AppError {
 	return NewAppError(ErrCodeDatabase, message, err)
 }
