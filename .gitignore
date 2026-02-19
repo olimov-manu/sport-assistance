@@ -1,7 +1,7 @@
 .env
 ./bin
 .git
-.idea
+.idea/
 .vscode
 *.log
 tmp

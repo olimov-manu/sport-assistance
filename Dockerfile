@@ -8,7 +8,7 @@ ENV GOPROXY=https://proxy.golang.org,direct
 ENV GOSUMDB=sum.golang.org
 
 COPY go.mod go.sum ./
-RUN for i in 1 2 3 4 5; do go mod download && exit 0; echo "go mod download failed (attempt $i), retrying..."; sleep 3; done; exit 1
+RUN go mod download
 
 COPY . .
 
