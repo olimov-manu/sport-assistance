@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"sport-assistance/internal/handlers/requests"
 	"sport-assistance/internal/handlers/responses"
@@ -16,10 +15,12 @@ type IService interface {
 	Login(ctx context.Context, req requests.LoginRequest) (responses.JWTResponse, error)
 	CreateTokens(ctx context.Context, userID uint64, email string) (string, string, error)
 	RefreshTokens(ctx context.Context, request requests.RefreshTokensRequest) (responses.JWTResponse, error)
+	Logout(ctx context.Context, request requests.LogoutRequest) (responses.EmptyResponse, error)
 }
 type IMiddleware interface {
 	AuthMiddleware() gin.HandlerFunc
 	CORSMiddleware() gin.HandlerFunc
+	RequirePermission(permission string) gin.HandlerFunc
 }
 
 type Handler struct {
@@ -56,16 +57,18 @@ func (h *Handler) InitHandler() *gin.Engine {
 		public.POST("/registration", h.Register)
 		public.POST("/login", h.Login)
 		public.POST("/refresh", h.RefreshTokens)
-		public.POST("/logout")
+		public.POST("/logout", h.Logout)
 	}
 
 	private := router.Group("/api/v1")
 	private.Use(h.middlewares.AuthMiddleware())
 	private.Use(h.middlewares.CORSMiddleware())
+
+	profile := private.Group("/profile")
+	profile.Use(h.middlewares.RequirePermission("news.read"))
 	{
-		private.GET("/lolo", func(c *gin.Context) {
-			fmt.Println("lolo")
-		})
+		profile.GET("/me", func(c *gin.Context) {})
 	}
+
 	return router
 }

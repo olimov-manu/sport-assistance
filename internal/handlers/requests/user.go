@@ -11,6 +11,7 @@ type CreateUserRequest struct {
 
 	SportActivityLevelID *int `json:"sport_activity_level_id,omitempty"`
 	TownID               *int `json:"town_id,omitempty"`
+	RoleID               *int `json:"role_id,omitempty"`
 
 	PhoneNumber string `json:"phone_number" validate:"required"`
 	Email       string `json:"email" validate:"required,email"`

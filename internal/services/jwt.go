@@ -31,7 +31,7 @@ func (s *Service) CreateTokens(ctx context.Context, userID uint64, email string)
 		return "", "", err
 	}
 
-	refreshToken, err := s.createRefreshToken(userID, now)
+	refreshToken, err := s.createRefreshToken(ctx, userID, now)
 	if err != nil {
 		return "", "", err
 	}
@@ -77,7 +77,7 @@ func (s *Service) RefreshTokens(ctx context.Context, req requests.RefreshTokensR
 		return responses.JWTResponse{}, err
 	}
 
-	newRefreshToken, err := s.createRefreshToken(user.ID, now)
+	newRefreshToken, err := s.createRefreshToken(ctx, user.ID, now)
 	if err != nil {
 		return responses.JWTResponse{}, err
 	}
@@ -100,7 +100,10 @@ func (s *Service) IsTokenExpired(expiresAt time.Time) bool {
 }
 
 func (s *Service) createAccessToken(ctx context.Context, userID uint64, email string, now time.Time) (string, error) {
-	claims := s.buildClaims(userID, email, now, s.cfg.SecurityConfig.AccessTokenTTL, commons.AccessSubject)
+	claims, err := s.buildClaims(ctx, userID, email, now, s.cfg.SecurityConfig.AccessTokenTTL, commons.AccessSubject)
+	if err != nil {
+		return "", err
+	}
 
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(s.cfg.SecurityConfig.AccessTokenSecret))
 	if err != nil {
@@ -115,8 +118,11 @@ func (s *Service) createAccessToken(ctx context.Context, userID uint64, email st
 	return token, nil
 }
 
-func (s *Service) createRefreshToken(userID uint64, now time.Time) (string, error) {
-	claims := s.buildClaims(userID, "", now, s.cfg.SecurityConfig.RefreshTokenTTL, commons.RefreshSubject)
+func (s *Service) createRefreshToken(ctx context.Context, userID uint64, now time.Time) (string, error) {
+	claims, err := s.buildClaims(ctx, userID, "", now, s.cfg.SecurityConfig.RefreshTokenTTL, commons.RefreshSubject)
+	if err != nil {
+		return "", err
+	}
 
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(s.cfg.SecurityConfig.RefreshTokenSecret))
 	if err != nil {
@@ -126,13 +132,32 @@ func (s *Service) createRefreshToken(userID uint64, now time.Time) (string, erro
 	return token, nil
 }
 
-func (s *Service) buildClaims(userID uint64, email string, now time.Time, ttl time.Duration, subject string) models.CustomClaims {
-	privileges := map[string]string{}
+func (s *Service) buildClaims(
+	ctx context.Context,
+	userID uint64,
+	email string,
+	now time.Time,
+	ttl time.Duration,
+	subject string,
+) (models.CustomClaims, error) {
+	permissions := make([]string, 0)
+
+	user, err := s.repository.GetUserByID(ctx, userID)
+	if err != nil {
+		return models.CustomClaims{}, err
+	}
+
+	if user.RoleID != nil {
+		permissions, err = s.repository.GetPermissionsByRoleId(ctx, uint64(*user.RoleID))
+		if err != nil {
+			return models.CustomClaims{}, err
+		}
+	}
 
 	return models.CustomClaims{
-		UserId:     userID,
-		Email:      email,
-		Privileges: privileges,
+		UserId:      userID,
+		Email:       email,
+		Permissions: permissions,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   subject,
 			ExpiresAt: jwt.NewNumericDate(now.Add(ttl)),
@@ -140,7 +165,7 @@ func (s *Service) buildClaims(userID uint64, email string, now time.Time, ttl ti
 			NotBefore: jwt.NewNumericDate(now),
 			ID:        uuid.NewString(),
 		},
-	}
+	}, nil
 }
 
 func (s *Service) saveToRedis(ctx context.Context, key, token string, expiresAt time.Time) error {

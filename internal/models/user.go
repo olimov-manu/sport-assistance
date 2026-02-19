@@ -14,6 +14,7 @@ type User struct {
 
 	SportActivityLevelID *int `json:"sport_activity_level_id"` // FK nullable
 	TownID               *int `json:"town_id"`                 // FK nullable
+	RoleID               *int `json:"role_id"`                 // FK nullable
 
 	PhoneNumber string `json:"phone_number"` // NOT NULL, UNIQUE
 	Email       string `json:"email"`        // NOT NULL, UNIQUE

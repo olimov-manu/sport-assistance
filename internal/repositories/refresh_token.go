@@ -3,7 +3,6 @@ package repositories
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"sport-assistance/internal/models"
 	"sport-assistance/pkg/myerrors"
@@ -132,25 +131,24 @@ func (r *Repository) RotateRefreshToken(
 	return nil
 }
 
-// RevokeRefreshToken отзывает refresh token по его ID
-func (r *Repository) RevokeRefreshToken(ctx context.Context, tokenID uint64) error {
+func (r *Repository) RevokeRefreshToken(ctx context.Context, token string) error {
 	const q = `
-		UPDATE refresh_tokens
-		SET revoked_at = now()
-		WHERE id = $1 AND revoked_at IS NULL
-	`
+        UPDATE refresh_tokens
+        SET revoked_at = now()
+        WHERE token = $1 AND revoked_at IS NULL
+    `
 
 	if err := ctx.Err(); err != nil {
 		return myerrors.NewRepositoryErr("контекст отменён перед выполнением запроса: ", err)
 	}
 
-	ct, err := r.postgres.Exec(ctx, q, tokenID)
+	ct, err := r.postgres.Exec(ctx, q, token)
 	if err != nil {
 		return myerrors.NewRepositoryErr("не удалось отозвать refresh token: ", err)
 	}
 
 	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("токен не найден или уже отозван")
+		return myerrors.ErrRefreshTokenInvalid
 	}
 
 	return nil

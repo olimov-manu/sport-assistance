@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"sport-assistance/internal/models"
+	"sport-assistance/internal/services/dto"
 )
 
 func (r *Repository) CreateUser(ctx context.Context, user models.User) (uint64, error) {
@@ -16,6 +17,7 @@ func (r *Repository) CreateUser(ctx context.Context, user models.User) (uint64, 
 		weight_kg,
 		sport_activity_level_id,
 		town_id,
+		role_id,
 		phone_number,
 		email,
 		password,
@@ -25,8 +27,8 @@ func (r *Repository) CreateUser(ctx context.Context, user models.User) (uint64, 
 	)
 	VALUES (
 		$1,$2,$3,$4,
-		$5,$6,$7,$8,
-		$9,$10,$11,$12,$13,$14
+		$5,$6,$7,$8,COALESCE($9, (SELECT id FROM roles WHERE name = 'guest')),
+		$10,$11,$12,$13,$14,$15
 	)
 	RETURNING id
 	`
@@ -43,6 +45,7 @@ func (r *Repository) CreateUser(ctx context.Context, user models.User) (uint64, 
 		user.WeightKg,
 		user.SportActivityLevelID,
 		user.TownID,
+		user.RoleID,
 		user.PhoneNumber,
 		user.Email,
 		user.Password,
@@ -58,7 +61,7 @@ func (r *Repository) CreateUser(ctx context.Context, user models.User) (uint64, 
 	return id, nil
 }
 
-func (r *Repository) GetUserByID(ctx context.Context, userID uint64) (models.User, error) {
+func (r *Repository) GetUserByID(ctx context.Context, userID uint64) (dto.UserDto, error) {
 	query := `
 		SELECT
 			id,
@@ -70,6 +73,7 @@ func (r *Repository) GetUserByID(ctx context.Context, userID uint64) (models.Use
 			weight_kg,
 			sport_activity_level_id,
 			town_id,
+			role_id,
 			phone_number,
 			email,
 			password,
@@ -94,6 +98,7 @@ func (r *Repository) GetUserByID(ctx context.Context, userID uint64) (models.Use
 		&user.WeightKg,
 		&user.SportActivityLevelID,
 		&user.TownID,
+		&user.RoleID,
 		&user.PhoneNumber,
 		&user.Email,
 		&user.Password,
@@ -106,19 +111,31 @@ func (r *Repository) GetUserByID(ctx context.Context, userID uint64) (models.Use
 	)
 
 	if err != nil {
-		return models.User{}, err
+		return dto.UserDto{}, err
 	}
-	return user, nil
+
+	userDTO, err := dto.UserToDto(user)
+	if err != nil {
+		return dto.UserDto{}, err
+	}
+
+	return userDTO, nil
 }
 
-func (r *Repository) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
+func (r *Repository) GetUserByEmail(ctx context.Context, email string) (dto.UserDto, error) {
 	q := `SELECT id, email, password FROM users WHERE email = $1`
 	var user models.User
 	err := r.postgres.QueryRow(ctx, q, email).Scan(&user.ID, &user.Email, &user.Password)
 	if err != nil {
-		return models.User{}, err
+		return dto.UserDto{}, err
 	}
-	return user, nil
+
+	userDTO, err := dto.UserToDto(user)
+	if err != nil {
+		return dto.UserDto{}, err
+	}
+
+	return userDTO, nil
 }
 
 func (r *Repository) UserExistsByEmail(ctx context.Context, email string) (bool, error) {

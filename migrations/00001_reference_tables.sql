@@ -5,33 +5,33 @@ CREATE TABLE towns (
 );
 
 CREATE TABLE sport_activity_levels (
-                                       id SERIAL PRIMARY KEY,
-                                       name TEXT NOT NULL UNIQUE
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE sports (
-                        id SERIAL PRIMARY KEY,
-                        name TEXT NOT NULL UNIQUE
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE services (
-                          id SERIAL PRIMARY KEY,
-                          name TEXT NOT NULL UNIQUE
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE privileges (
-                            id SERIAL PRIMARY KEY,
-                            name TEXT NOT NULL UNIQUE
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE match_types (
-                             id SERIAL PRIMARY KEY,
-                             name TEXT NOT NULL UNIQUE
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE chat_types (
-                            id SERIAL PRIMARY KEY,
-                            name TEXT NOT NULL UNIQUE
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE
 );
 
 -- +goose Down
