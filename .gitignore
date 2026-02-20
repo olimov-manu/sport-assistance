@@ -11,3 +11,4 @@ vendor
 .gocache/
 gomodcache/
 ./contracts.md
+./tz.txt

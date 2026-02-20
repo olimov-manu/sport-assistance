@@ -14,8 +14,11 @@ import (
 type IRepository interface {
 	// User
 	CreateUser(ctx context.Context, user models.User) (uint64, error)
+	GetUsers(ctx context.Context) ([]dto.UserDto, error)
 	GetUserByID(ctx context.Context, userID uint64) (dto.UserDto, error)
 	GetUserByEmail(ctx context.Context, email string) (dto.UserDto, error)
+	UpdateUser(ctx context.Context, userID uint64, user models.User) error
+	DeleteUser(ctx context.Context, userID uint64) error
 	UserExistsByEmail(ctx context.Context, email string) (bool, error)
 
 	// Permissions

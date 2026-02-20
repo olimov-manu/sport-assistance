@@ -4,7 +4,7 @@ type CreateUserRequest struct {
 	Name      string `json:"name" validate:"required,max=100"`
 	Surname   string `json:"surname" validate:"required,max=100"`
 	Gender    string `json:"gender" validate:"required"`
-	BirthDate string `json:"birth_date" validate:"required"` // ISO date: 2006-01-02
+	BirthDate string `json:"birth_date" validate:"required,datetime=02-01-2006"` // Format: DD-MM-YYYY
 
 	HeightCm *int `json:"height_cm,omitempty"`
 	WeightKg *int `json:"weight_kg,omitempty"`

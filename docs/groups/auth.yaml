@@ -18,7 +18,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/JWTResponse"
         "400":
-          description: Invalid request body
+          description: Validation or application error
           content:
             application/json:
               schema:
@@ -34,7 +34,7 @@ paths:
     post:
       tags:
         - auth
-      summary: Login user
+      summary: Login user by email and password
       requestBody:
         required: true
         content:
@@ -49,7 +49,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/JWTResponse"
         "400":
-          description: Invalid request body
+          description: Validation or application error
           content:
             application/json:
               schema:
@@ -80,7 +80,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/JWTResponse"
         "400":
-          description: Invalid request body
+          description: Validation or application error
           content:
             application/json:
               schema:
@@ -97,26 +97,128 @@ paths:
       tags:
         - auth
       summary: Logout user
-      description: Route is declared in router, handler is not implemented yet.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogoutRequest"
       responses:
-        "501":
-          description: Not implemented
+        "200":
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                success: true
+        "400":
+          description: Validation or application error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/otp/send:
+    post:
+      tags:
+        - otp
+      summary: Send OTP to identifier
+      description: Stores OTP in Redis by prefix and identifier. Current implementation returns stub OTP value.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendOTPRequest"
+      responses:
+        "200":
+          description: OTP generated and stored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SendOTPResponse"
+              example:
+                otp: "0000"
+        "400":
+          description: Validation or application error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/otp/confirm:
+    post:
+      tags:
+        - otp
+      summary: Confirm OTP by identifier
+      description: Verifies OTP from Redis and removes OTP key on success.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfirmOTPRequest"
+      responses:
+        "200":
+          description: OTP confirmed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                success: true
+        "400":
+          description: Validation or application error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
 components:
   schemas:
     CreateUserRequest:
       type: object
+      required:
+        - name
+        - surname
+        - gender
+        - birth_date
+        - phone_number
+        - email
+        - password
+        - is_have_injury
       properties:
         name:
           type: string
+          maxLength: 100
         surname:
           type: string
+          maxLength: 100
         gender:
           type: string
         birth_date:
           type: string
-          description: ISO date (YYYY-MM-DD)
-          format: date
+          description: Date in format DD-MM-YYYY
+          pattern: "^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-[0-9]{4}$"
         height_cm:
           type: integer
           nullable: true
@@ -129,13 +231,19 @@ components:
         town_id:
           type: integer
           nullable: true
+        role_id:
+          type: integer
+          nullable: true
         phone_number:
           type: string
+          description: Phone number used as OTP identifier
+          example: "+79991234567"
         email:
           type: string
           format: email
         password:
           type: string
+          minLength: 6
         is_have_injury:
           type: boolean
         injury_description:
@@ -144,54 +252,102 @@ components:
         photo:
           type: string
           nullable: true
-      required:
-        - name
-        - surname
-        - gender
-        - birth_date
-        - phone_number
-        - email
-        - password
-        - is_have_injury
 
     LoginRequest:
       type: object
+      required:
+        - email
+        - password
       properties:
         email:
           type: string
           format: email
         password:
           type: string
-      required:
-        - email
-        - password
 
     RefreshTokensRequest:
       type: object
+      required:
+        - access_token
+        - refresh_token
       properties:
         access_token:
           type: string
         refresh_token:
           type: string
+
+    LogoutRequest:
+      type: object
       required:
-        - access_token
+        - user_id
         - refresh_token
+      properties:
+        user_id:
+          type: integer
+          format: int64
+          minimum: 1
+        refresh_token:
+          type: string
+
+    SendOTPRequest:
+      type: object
+      required:
+        - identifier
+      properties:
+        identifier:
+          type: string
+          description: Phone number in international format
+          example: "+79991234567"
+
+    ConfirmOTPRequest:
+      type: object
+      required:
+        - identifier
+        - otp
+      properties:
+        identifier:
+          type: string
+          description: Phone number in international format
+          example: "+79991234567"
+        otp:
+          type: string
+          example: "0000"
 
     JWTResponse:
       type: object
+      required:
+        - access_token
+        - refresh_token
       properties:
         access_token:
           type: string
         refresh_token:
           type: string
+
+    SendOTPResponse:
+      type: object
       required:
-        - access_token
-        - refresh_token
+        - otp
+      properties:
+        otp:
+          type: string
+          example: "0000"
+
+    SuccessResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+          example: true
 
     ErrorResponse:
       type: object
+      required:
+        - message
       properties:
+        message:
+          type: string
         error:
           type: string
-      required:
-        - error

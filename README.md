@@ -106,7 +106,7 @@ go run ./cmd/main.go
 - `migrations/00011_roles_permissions.sql`:
   - создает `roles`, `permissions`, `role_permissions`;
   - добавляет `users.role_id`.
-- `migrations/00012_seed_roles_permissions.sql`:
+- `migrations/00012_insert_roles_permissions.sql`:
   - заполняет роли (`guest`, `client`, `assistant`, `admin`);
   - заполняет список permissions;
   - заполняет связи `role_permissions`.

@@ -35,6 +35,7 @@ type SecurityConfig struct {
 	RefreshTokenTTL        time.Duration
 	RefreshTokenSecret     string
 	AccessTokenRedisPrefix string
+	OtpRedisPrefix         string
 }
 
 type LoggerConfig struct {
@@ -116,6 +117,7 @@ func GetConfigs() (*Config, error) {
 			AccessTokenRedisPrefix: getEnv("SECURITY_JWT_ACCESS_TOKEN_REDIS_PREFIX", "auth:access_token:%d"),
 			RefreshTokenSecret:     getEnv("SECURITY_JWT_REFRESH_SECRET_KEY", ""),
 			RefreshTokenTTL:        utils.ToDuration(getEnv("SECURITY_JWT_REFRESH_TOKEN_TTL", "720h")),
+			OtpRedisPrefix:         getEnv("OTP_REDIS_PREFIX", "auth:otp:code:%s"),
 		},
 		Logger: LoggerConfig{
 			Level: getEnv("LOG_LEVEL", "info"),

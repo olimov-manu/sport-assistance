@@ -14,3 +14,12 @@ type RefreshTokensRequest struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 }
+
+type SendOTPRequest struct {
+	Identifier string `json:"identifier"`
+}
+
+type ConfirmOTPRequest struct {
+	Identifier string `json:"identifier"`
+	OTP        string `json:"otp"`
+}

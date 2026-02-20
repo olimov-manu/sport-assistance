@@ -2,13 +2,22 @@ package middlewares
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
-func (m *Middleware) RequirePermission(permission string) gin.HandlerFunc {
+func (m *Middleware) RequirePermissions(requiredPermissions ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if permission == "" {
+		filteredRequired := make([]string, 0, len(requiredPermissions))
+		for _, permission := range requiredPermissions {
+			permission = strings.TrimSpace(permission)
+			if permission != "" {
+				filteredRequired = append(filteredRequired, permission)
+			}
+		}
+
+		if len(filteredRequired) == 0 {
 			c.Next()
 			return
 		}
@@ -38,10 +47,18 @@ func (m *Middleware) RequirePermission(permission string) gin.HandlerFunc {
 			permissionSet[permission] = struct{}{}
 		}
 
-		if _, hasPermission := permissionSet[permission]; !hasPermission {
+		missingPermissions := make([]string, 0)
+		for _, permission := range filteredRequired {
+			if _, hasPermission := permissionSet[permission]; !hasPermission {
+				missingPermissions = append(missingPermissions, permission)
+			}
+		}
+
+		if len(missingPermissions) > 0 {
 			c.JSON(http.StatusForbidden, gin.H{
 				"success": false,
 				"error":   "insufficient permissions",
+				"missing": missingPermissions,
 			})
 			c.Abort()
 			return

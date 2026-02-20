@@ -89,7 +89,7 @@ func (m mockRepository) RevokeRefreshToken(ctx context.Context, refreshToken str
 
 func testConfig() *configs.Config {
 	return &configs.Config{
-		DatabaseConfig: configs.DatabaseConfig{DBDateFormat: "2006-01-02"},
+		DatabaseConfig: configs.DatabaseConfig{DBDateFormat: "02-01-2006"},
 		SecurityConfig: configs.SecurityConfig{
 			AccessTokenTTL:         time.Minute,
 			AccessTokenSecret:      "access-secret",
@@ -189,7 +189,7 @@ func TestRegister_CreateUserError(t *testing.T) {
 		Name:      "John",
 		Surname:   "Doe",
 		Gender:    "male",
-		BirthDate: "2000-01-02",
+		BirthDate: "02-01-2000",
 		Email:     "john@example.com",
 		Password:  "secret123",
 	})

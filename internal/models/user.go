@@ -12,13 +12,17 @@ type User struct {
 	HeightCm *int `json:"height_cm"` // nullable
 	WeightKg *int `json:"weight_kg"` // nullable
 
-	SportActivityLevelID *int `json:"sport_activity_level_id"` // FK nullable
-	TownID               *int `json:"town_id"`                 // FK nullable
-	RoleID               *int `json:"role_id"`                 // FK nullable
+	SportActivityLevelID     *int `json:"sport_activity_level_id"`     // FK nullable
+	SportTargetID            *int `json:"sport_target_id"`             // FK nullable
+	LocationPreferenceTypeID *int `json:"location_preference_type_id"` // FK nullable
+	TownID                   *int `json:"town_id"`                     // FK nullable
+	RoleID                   *int `json:"role_id"`                     // FK nullable
 
-	PhoneNumber string `json:"phone_number"` // NOT NULL, UNIQUE
-	Email       string `json:"email"`        // NOT NULL, UNIQUE
-	Password    string `json:"-"`            // хешированный пароль
+	PhoneNumber     string `json:"phone_number"`      // NOT NULL, UNIQUE
+	IsPhoneVerified bool   `json:"is_phone_verified"` // NOT NULL, DEFAULT false
+	Email           string `json:"email"`             // NOT NULL, UNIQUE
+	IsEmailVerified bool   `json:"is_email_verified"` // NOT NULL, DEFAULT false
+	Password        string `json:"-"`                 // hashed password
 
 	IsHaveInjury      bool    `json:"is_have_injury"`     // DEFAULT false
 	InjuryDescription *string `json:"injury_description"` // nullable
@@ -26,5 +30,5 @@ type User struct {
 
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`
-	DeletedAt *time.Time `json:"deleted_at"` // nullable для soft delete
+	DeletedAt *time.Time `json:"deleted_at"` // nullable for soft delete
 }

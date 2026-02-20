@@ -11,16 +11,22 @@ import (
 )
 
 type IService interface {
+
+	// jwt
 	Register(ctx context.Context, req requests.CreateUserRequest) (responses.JWTResponse, error)
 	Login(ctx context.Context, req requests.LoginRequest) (responses.JWTResponse, error)
 	CreateTokens(ctx context.Context, userID uint64, email string) (string, string, error)
 	RefreshTokens(ctx context.Context, request requests.RefreshTokensRequest) (responses.JWTResponse, error)
 	Logout(ctx context.Context, request requests.LogoutRequest) (responses.EmptyResponse, error)
+
+	//OTP
+	SendOTP(ctx context.Context, identifier string) (string, error)
+	ConfirmOTP(ctx context.Context, identifier, otp string) error
 }
 type IMiddleware interface {
 	AuthMiddleware() gin.HandlerFunc
 	CORSMiddleware() gin.HandlerFunc
-	RequirePermission(permission string) gin.HandlerFunc
+	RequirePermissions(permissions ...string) gin.HandlerFunc
 }
 
 type Handler struct {
@@ -58,6 +64,8 @@ func (h *Handler) InitHandler() *gin.Engine {
 		public.POST("/login", h.Login)
 		public.POST("/refresh", h.RefreshTokens)
 		public.POST("/logout", h.Logout)
+		public.POST("/otp/send", h.SendOTP)
+		public.POST("/otp/confirm", h.ConfirmOTP)
 	}
 
 	private := router.Group("/api/v1")
@@ -65,9 +73,20 @@ func (h *Handler) InitHandler() *gin.Engine {
 	private.Use(h.middlewares.CORSMiddleware())
 
 	profile := private.Group("/profile")
-	profile.Use(h.middlewares.RequirePermission("news.read"))
+	profile.Use(h.middlewares.RequirePermissions("profile.view.own"))
 	{
 		profile.GET("/me", func(c *gin.Context) {})
+	}
+
+	match := private.Group("/match")
+	match.Use(
+		h.middlewares.RequirePermissions(
+			"match.confirm.participation",
+			"match.create",
+			"match.enter.result",
+			"match.invite.users"),
+	)
+	{
 	}
 
 	return router

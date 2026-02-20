@@ -1,20 +1,33 @@
 paths:
-  /api/v1/lolo:
+  /api/v1/profile/me:
     get:
       tags:
-        - private
-      summary: Protected test endpoint
+        - profile
+      summary: Get current user profile
+      description: Route exists, but handler body is currently empty in code.
       security:
         - bearerAuth: []
       responses:
         "200":
-          description: Request accepted
+          description: Placeholder successful response (current implementation returns empty body)
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+              example: {}
         "401":
           description: Unauthorized
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/AuthMiddlewareErrorResponse"
+        "403":
+          description: Forbidden (missing required permissions)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PermissionDeniedResponse"
 
 components:
   securitySchemes:
@@ -25,10 +38,28 @@ components:
   schemas:
     AuthMiddlewareErrorResponse:
       type: object
+      required:
+        - success
       properties:
         success:
           type: boolean
+          example: false
         error:
           type: string
+
+    PermissionDeniedResponse:
+      type: object
       required:
         - success
+        - error
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: insufficient permissions
+        missing:
+          type: array
+          items:
+            type: string

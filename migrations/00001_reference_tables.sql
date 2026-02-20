@@ -9,7 +9,22 @@ CREATE TABLE sport_activity_levels (
     name TEXT NOT NULL UNIQUE
 );
 
+CREATE TABLE sport_targets (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE location_preference_types (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE
+);
+
 CREATE TABLE sports (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE roles (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE
 );
@@ -36,4 +51,4 @@ CREATE TABLE chat_types (
 
 -- +goose Down
 DROP TABLE IF EXISTS chat_types, match_types, privileges,
-    services, sports, sport_activity_levels, towns;
+    services, roles, sports, location_preference_types, sport_targets, sport_activity_levels, towns;
