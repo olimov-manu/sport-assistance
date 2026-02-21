@@ -21,16 +21,14 @@ func (h *Handler) SendOTP(c *gin.Context) {
 		return
 	}
 
-	otp, err := h.service.SendOTP(ctx, req.Identifier)
+	response, err := h.service.SendOTP(ctx, req.Identifier)
 	if err != nil {
 		h.logger.Error("Send otp failed: ", "err", err)
 		h.handleError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"otp": otp,
-	})
+	c.JSON(http.StatusOK, response)
 }
 
 func (h *Handler) ConfirmOTP(c *gin.Context) {
@@ -46,13 +44,12 @@ func (h *Handler) ConfirmOTP(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.ConfirmOTP(ctx, req.Identifier, req.OTP); err != nil {
+	response, err := h.service.ConfirmOTP(ctx, req.Identifier, req.OTP)
+	if err != nil {
 		h.logger.Error("Confirm otp failed: ", "err", err)
 		h.handleError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-	})
+	c.JSON(http.StatusOK, response)
 }

@@ -20,8 +20,8 @@ type IService interface {
 	Logout(ctx context.Context, request requests.LogoutRequest) (responses.EmptyResponse, error)
 
 	//OTP
-	SendOTP(ctx context.Context, identifier string) (string, error)
-	ConfirmOTP(ctx context.Context, identifier, otp string) error
+	SendOTP(ctx context.Context, identifier string) (responses.SendOTPResponse, error)
+	ConfirmOTP(ctx context.Context, identifier, otp string) (responses.ConfirmOTPResponse, error)
 }
 type IMiddleware interface {
 	AuthMiddleware() gin.HandlerFunc

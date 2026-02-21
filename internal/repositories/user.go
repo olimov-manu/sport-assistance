@@ -157,6 +157,22 @@ func (r *Repository) GetUserByEmail(ctx context.Context, email string) (dto.User
 	return userDTO, nil
 }
 
+func (r *Repository) GetUserByPhone(ctx context.Context, phone string) (dto.UserDto, error) {
+	q := `SELECT id, email FROM users WHERE phone_number = $1 AND deleted_at IS NULL`
+	var user models.User
+	err := r.postgres.QueryRow(ctx, q, phone).Scan(&user.ID, &user.Email)
+	if err != nil {
+		return dto.UserDto{}, err
+	}
+
+	userDTO, err := dto.UserToDto(user)
+	if err != nil {
+		return dto.UserDto{}, err
+	}
+
+	return userDTO, nil
+}
+
 func (r *Repository) UserExistsByEmail(ctx context.Context, email string) (bool, error) {
 	query := `
 	SELECT EXISTS (

@@ -130,7 +130,7 @@ paths:
       tags:
         - otp
       summary: Send OTP to identifier
-      description: Stores OTP in Redis by prefix and identifier. Current implementation returns stub OTP value.
+      description: Stores OTP in Redis by prefix and identifier and returns send status.
       requestBody:
         required: true
         content:
@@ -145,7 +145,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/SendOTPResponse"
               example:
-                otp: "0000"
+                otp_sent: true
+                message: OTP sent
         "400":
           description: Validation or application error
           content:
@@ -177,9 +178,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SuccessResponse"
+                $ref: "#/components/schemas/ConfirmOTPResponse"
               example:
-                success: true
+                otp_confirmed: true
+                is_registered: true
+                message: OTP confirmed
+                access_token: <jwt_access_token>
+                refresh_token: <jwt_refresh_token>
         "400":
           description: Validation or application error
           content:
@@ -327,11 +332,36 @@ components:
     SendOTPResponse:
       type: object
       required:
-        - otp
+        - otp_sent
+        - message
       properties:
-        otp:
+        otp_sent:
+          type: boolean
+          example: true
+        message:
           type: string
-          example: "0000"
+          example: OTP sent
+
+    ConfirmOTPResponse:
+      type: object
+      required:
+        - otp_confirmed
+        - is_registered
+        - message
+      properties:
+        otp_confirmed:
+          type: boolean
+          example: true
+        is_registered:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: OTP confirmed, user is not registered
+        access_token:
+          type: string
+        refresh_token:
+          type: string
 
     SuccessResponse:
       type: object
